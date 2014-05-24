@@ -19,4 +19,28 @@ end
 	  config.access_token_secret = Const::ACCESS_TOKEN_SECRET
 end
 
+def update_name(status)
+
+	if status.text.include?("(@whywaita)") then
+		text = status.text.sub("(@whywaita)","")
+		text = text.sub("@","")
+
+		if text && text.length > 20 then
+			return
+		end
+
+	@rest_client.update_profile(:name => "#{text}")
+	opt = {"in_reply_to_status_id" => status.id.to_s}
+	tweet = "@#{status.user.screen_name} #{text}になったよ"
+	@rest_client.update tweet,opt
+	end
+
+end
+
+@stream_client.user do |object|
+	next unless object.is_a? Twitter::Tweet
+	unless object.text.start_with? "RT"
+		update_name(object)
+	end
+end
 
